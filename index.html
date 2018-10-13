@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebParsing</title>
+    <!--<link href="css/style.css" rel="stylesheet">-->
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+
+        /*
+
+        */
+
+        #slider-area{
+            text-align: center;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 150px;
+            margin: 15px 0;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+        }
+
+        .slider:hover {
+            opacity: 1;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        #post-area{
+            max-width: 1500px;
+            text-align: center;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        #post-area >div{
+            max-width: 450px;
+            width: 95%;
+            border: 1px solid #554;
+            margin: 15px 0;
+            cursor: pointer;
+        }
+
+        #post-area p{
+            margin: 15px 0;
+        }
+        #post-area img{
+            max-width: 350px;
+            width: 95%;
+            display: block;
+            margin: auto;
+        }
+
+        /*
+        load animation
+         */
+
+        #lds-dual-ring {
+            display: none;
+            width: 64px;
+            height: 64px;
+            position: fixed;
+            left: 47%;
+            top: 45%;
+        }
+        #lds-dual-ring:after {
+            content: " ";
+            display: block;
+            width: 46px;
+            height: 46px;
+            margin: 1px;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            border-color: #2158f3 transparent #2158f3 transparent;
+            animation: lds-dual-ring 1.2s linear infinite;
+        }
+        @keyframes lds-dual-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #dis{
+            width: 100%;
+            height: 100%;
+            background: #5555445c;
+            position: fixed;
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="dis"></div>
+
+<div id="slider-area">
+    <input type="range" min="1" max="15" value="5" class="slider" id="range">
+    <p>Value: <span id="post-count"></span></p>
+</div>
+
+<div id="post-area">
+
+</div>
+
+<div id="lds-dual-ring"></div>
+
+
+<script>
+
+    var slider = document.getElementById("range");
+    var output = document.getElementById("post-count");
+    var postCount = output.innerHTML = slider.value;
+    var postArea = document.getElementById("post-area");
+    var animate = document.getElementById('lds-dual-ring');
+    var dis = document.querySelector('#dis');
+
+    slider.oninput = function() {
+        output.innerHTML = this.value;
+        postCount = this.value;
+        loadData(postCount);
+    };
+
+    window.onload = function () {
+      loadData(postCount);
+    };
+
+    function loadData(postCount) {
+        animate.style.display = "block";
+        dis.style.display = "block";
+        onRequest(postCount);
+        setTimeout(function(){
+            animate.style.display = "none";
+            dis.style.display = "none";
+        }, 1500);
+    }
+
+    function onRequest(postCount){
+        let xhr = new XMLHttpRequest();
+        let url = "http://localhost:8000/ajax?count=" + postCount;
+        xhr.open("GET",url, true);
+        xhr.onload = function () {
+            var data = JSON.parse(xhr.responseText);
+            postArea.innerHTML = "";
+            for (let i = 0; i < data.length; i++) {
+                var div = document.createElement('div');
+                div.appendChild(getTextEl("h3",data[i].title));
+                div.appendChild(getTextEl("p",data[i].description));
+                div.appendChild(getImages(data[i].image));
+                postArea.appendChild(div);
+            }
+            console.log(data);
+        };
+
+        xhr.send();
+    }
+
+    function getTextEl(tag,value) {
+        var textEl = document.createElement(tag);
+        var text = document.createTextNode(value);
+        textEl.appendChild(text);
+        return textEl;
+    }
+
+    function getImages(value) {
+        var image = document.createElement("img");
+        image.setAttribute("src", value);
+        return image;
+    }
+</script>
+
+</body>
+</html>
